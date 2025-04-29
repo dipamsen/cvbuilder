@@ -22,26 +22,26 @@ export default function EditCV({
   const labelStyle = "block text-md font-medium text-gray-300";
 
   return (
-    <div className="edit-cv-container bg-gray-800 p-8 shadow-lg rounded-lg w-1/2">
-      <h2 className="text-3xl font-semibold mb-6">Edit Your CV</h2>
-      <form className="space-y-6">
-        <div>
-          <label htmlFor="template" className={labelStyle}>
-            Choose Template
-          </label>
-          <input
-            type="radio"
-            name="template"
-            value="iitk"
-            checked={template === "iitk"}
-            onChange={(e) => setTemplate(e.target.value)}
-            className="mr-2"
-          />
-          <label htmlFor="iitk" className="mr-4">
-            IITK
-          </label>
-        </div>
-        <div className="overflow-y-auto overflow-x-visible h-full space-y-6 px-0.5">
+    <div className="edit-cv-container bg-gray-800 p-8 shadow-lg rounded-lg w-1/2 flex flex-col">
+      <h2 className="text-3xl font-semibold mb-6 shrink-0">Edit Your CV</h2>
+      <form className="space-y-6 flex flex-col  overflow-hidden">
+        <div className="overflow-y-auto h-full space-y-4 px-0.5 flex flex-col flex-1">
+          <div>
+            <label htmlFor="template" className={labelStyle}>
+              Choose Template
+            </label>
+            <input
+              type="radio"
+              name="template"
+              value="iitk"
+              checked={template === "iitk"}
+              onChange={(e) => setTemplate(e.target.value)}
+              className="mr-2"
+            />
+            <label htmlFor="iitk" className="mr-4">
+              IITK
+            </label>
+          </div>
           <div>
             <label htmlFor="name" className={labelStyle}>
               Name
