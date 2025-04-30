@@ -1,44 +1,47 @@
-import renderUrl from "@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm?url";
-import compileUrl from "@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm?url";
-import { $typst } from "@myriaddreamin/typst.ts/dist/esm/contrib/snippet.mjs";
-import { useEffect, useState } from "react";
-
-$typst.setRendererInitOptions({
-  getModule: () => new URL(renderUrl, import.meta.url),
-});
-
-$typst.setCompilerInitOptions({
-  getModule: () => new URL(compileUrl, import.meta.url),
-});
+import { TypstCompiler } from "@myriaddreamin/typst.ts";
+import { useCallback, useEffect, useState } from "react";
+import { setupCompiler } from "../utils/typstCompiler";
+import { TypstDocument } from "@myriaddreamin/typst.react";
 
 function PreviewCV({ typstCode }: { typstCode: string }) {
-  const [svg, setSvg] = useState<string>("");
+  const [compiler, setCompiler] = useState<TypstCompiler | null>(null);
+  const [result, setResult] =
+    useState<Awaited<ReturnType<TypstCompiler["compile"]> | null>>(null);
+
+  const compile = useCallback(
+    async (c = compiler) => {
+      if (!c) return;
+      c.addSource("/main.typ", typstCode);
+      const result = await c.compile({
+        mainFilePath: "/main.typ",
+      });
+      setResult(result);
+    },
+    [compiler, typstCode]
+  );
   useEffect(() => {
-    const compile = async () => {
-      const s = await $typst.svg({
-        mainContent: typstCode,
-      });
-      setSvg(s.replace(/<svg/, '<svg width="100%" height="100%" '));
-    };
+    if (compiler) return;
+    async function init() {
+      const cc = await setupCompiler();
+      cc.addSource("/main.typ", typstCode);
+      setCompiler(cc);
+      compile(cc);
+    }
+    init();
+  }, [compiler, compile, typstCode]);
+
+  useEffect(() => {
     const id = setTimeout(() => {
-      compile().catch((e) => {
-        console.error(e);
-        setSvg(
-          `<div class="text-red-500 text-center">Error: ${e.message}</div>`
-        );
-      });
+      compile();
     }, 500);
     return () => {
       clearTimeout(id);
     };
-  }, [typstCode]);
+  }, [typstCode, compile]);
   return (
-    <div className="section h-full preview p-4 bg-gray-800 shadow-md rounded-md w-1/2 text-gray-200">
-      <div className="overflow-y-auto bg-white overflow-x-visible h-full space-y-6 px-0.5">
-        <div
-          className="preview-svg"
-          dangerouslySetInnerHTML={{ __html: svg }}
-        />
+    <div className="section md:h-full preview p-4 bg-gray-800 shadow-md rounded-md md:w-1/2 text-gray-200">
+      <div className="overflow-y-auto bg-white overflow-x-visible h-120 md:h-full space-y-6 px-0.5">
+        {result?.result && <TypstDocument artifact={result.result} />}
       </div>
     </div>
   );

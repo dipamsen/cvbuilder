@@ -22,7 +22,7 @@ export default function EditCV({
   const labelStyle = "block text-md font-medium text-gray-300";
 
   return (
-    <div className="edit-cv-container bg-gray-800 p-8 shadow-lg rounded-lg w-1/2 flex flex-col">
+    <div className="edit-cv-container bg-gray-800 p-8 shadow-lg rounded-lg md:w-1/2 flex flex-col">
       <h2 className="text-3xl font-semibold mb-6 shrink-0">Edit Your CV</h2>
       <form className="space-y-6 flex flex-col  overflow-hidden">
         <div className="overflow-y-auto h-full space-y-4 px-0.5 flex flex-col flex-1">
@@ -84,7 +84,7 @@ export default function EditCV({
               className={inputStyle}
             />
           </div>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="email" className={labelStyle}>
                 Email
@@ -114,7 +114,7 @@ export default function EditCV({
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="github" className={labelStyle}>
                 GitHub
@@ -144,7 +144,7 @@ export default function EditCV({
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="linkedin" className={labelStyle}>
                 LinkedIn

@@ -9,12 +9,12 @@ function App() {
   const [state, setState] = useState<CVData>(defaultData);
 
   return (
-    <div className="bg-gray-900 h-screen text-white flex flex-col">
+    <div className="bg-gray-900 md:h-screen text-white flex flex-col">
       <div className="bg-gray-800 text-white text-2xl font-bold text-center py-4 shadow-md shrink-0">
         CVBuilder
       </div>
 
-      <main className="p-4 flex gap-4 text-gray-200 flex-1 overflow-hidden">
+      <main className="p-4 flex gap-4 text-gray-200 flex-1 md:overflow-hidden flex-col md:flex-row">
         <EditCV
           template={template}
           setTemplate={setTemplate}
