@@ -2,6 +2,12 @@ import { TypstCompiler } from "@myriaddreamin/typst.ts";
 import { useCallback, useEffect, useState } from "react";
 import { setupCompiler } from "../utils/typstCompiler";
 import { TypstDocument } from "@myriaddreamin/typst.react";
+import renderUrl from "@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm?url";
+
+TypstDocument.setWasmModuleInitOptions({
+  getModule: () => new URL(renderUrl, import.meta.url),
+  beforeBuild: [],
+});
 
 function PreviewCV({ typstCode }: { typstCode: string }) {
   const [compiler, setCompiler] = useState<TypstCompiler | null>(null);
