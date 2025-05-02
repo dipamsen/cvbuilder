@@ -1,18 +1,12 @@
 import { TypstCompiler } from "@myriaddreamin/typst.ts";
 import { useCallback, useEffect, useState } from "react";
-import { setupCompiler } from "../utils/typstCompiler";
-import { TypstDocument } from "@myriaddreamin/typst.react";
-import renderUrl from "@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm?url";
-
-TypstDocument.setWasmModuleInitOptions({
-  getModule: () => new URL(renderUrl, import.meta.url),
-  beforeBuild: [],
-});
+import { setupCompiler } from "../utils/typst";
+import OutputViewer from "./OutputViewer";
 
 function PreviewCV({ typstCode }: { typstCode: string }) {
-  const [compiler, setCompiler] = useState<TypstCompiler | null>(null);
+  const [compiler, setCompiler] = useState<TypstCompiler>();
   const [result, setResult] =
-    useState<Awaited<ReturnType<TypstCompiler["compile"]> | null>>(null);
+    useState<Awaited<ReturnType<TypstCompiler["compile"]>>>();
 
   const compile = useCallback(
     async (c = compiler) => {
@@ -25,6 +19,7 @@ function PreviewCV({ typstCode }: { typstCode: string }) {
     },
     [compiler, typstCode]
   );
+
   useEffect(() => {
     if (compiler) return;
     async function init() {
@@ -46,8 +41,8 @@ function PreviewCV({ typstCode }: { typstCode: string }) {
   }, [typstCode, compile]);
   return (
     <div className="section md:h-full preview p-4 bg-gray-800 shadow-md rounded-md md:w-1/2 text-gray-200">
-      <div className="overflow-y-auto bg-white overflow-x-visible h-120 md:h-full space-y-6 px-0.5">
-        {result?.result && <TypstDocument artifact={result.result} />}
+      <div className="overflow-y-auto bg-white overflow-x-visible h-120 md:h-full space-y-6 px-0.5 [scrollbar-gutter:stable]">
+        <OutputViewer artifact={result?.result} />
       </div>
     </div>
   );

@@ -1,10 +1,12 @@
 import {
   createTypstCompiler,
+  createTypstRenderer,
   FetchPackageRegistry,
   MemoryAccessModel,
   preloadRemoteFonts,
 } from "@myriaddreamin/typst.ts";
 import compileUrl from "@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm?url";
+import renderUrl from "@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm?url";
 import {
   withAccessModel,
   withPackageRegistry,
@@ -29,4 +31,15 @@ export async function setupCompiler() {
   });
 
   return compiler;
+}
+
+export async function setupRenderer() {
+  console.log("Creating typst renderer...");
+  const renderer = createTypstRenderer();
+  await renderer.init({
+    beforeBuild: [],
+    getModule: () => new URL(renderUrl, import.meta.url),
+  });
+
+  return renderer;
 }
