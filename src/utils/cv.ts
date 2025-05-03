@@ -12,7 +12,10 @@ export function typify(input: unknown): string {
     return `${input}`;
   } else if (Array.isArray(input)) {
     // returns array
+    if (input.length == 1) return `(${typify(input[0])},)`;
     return `(${input.map(typify).join(", ")})`;
+  } else if (input instanceof TypstElt) {
+    return input.toCode();
   } else if (typeof input === "object" && input !== null) {
     // returns dict
     return `(${Object.entries(input)
@@ -31,14 +34,52 @@ export function typ(
 ): string {
   let result = strings[0];
   for (let i = 0; i < values.length; i++) {
-    result += typify(values[i]) + strings[i + 1];
+    result +=
+      typeof values[i] === "string"
+        ? values[i]
+        : typify(values[i]) + strings[i + 1];
   }
   return result;
 }
 
+abstract class TypstElt {
+  abstract toCode(): string;
+}
+
+export class FC extends TypstElt {
+  constructor(
+    public name: string,
+    public args: unknown[] = [],
+    public kwargs: Record<string, unknown> = {}
+  ) {
+    super();
+  }
+
+  toCode() {
+    // const argsStr = typify(this.args);
+    // const kwargsStr = typify(this.kwargs);
+    // return `${this.name}(..${kwargsStr}, ..${argsStr})`;
+    const argsStr = this.args.map(typify).join(", ");
+    const kwargsStr = Object.entries(this.kwargs)
+      .map(([key, value]) => `${key}: ${typify(value)}`)
+      .join(", ");
+
+    return `${this.name}(${[kwargsStr, argsStr].filter(Boolean).join(", ")})`;
+  }
+}
+
+export class Content extends TypstElt {
+  constructor(public str: string) {
+    super();
+  }
+  toCode() {
+    return `[${this.str}]`;
+  }
+}
+
 export function generateTypstCV(data: CVData, template: string): string {
-  if (template === "iitk")
-    return typ`
+  if (template === "iitk") {
+    const out = typ`
 #import "@preview/fontawesome:0.5.0": fa-icon
 
 
@@ -168,69 +209,37 @@ export function generateTypstCV(data: CVData, template: string): string {
   )
 ]
 
-#section(title: "Scholastic Achievements")[
-  - Received the *Academic Excellence Award* for exceptional academic performance in 2022-23 session.
-  - Secured *All India Rank XXX* in *Joint Entrance Exam (Advanced) 2023* among the 250,000 candidates.
-  - Secured *All India Rank XXX* in *Joint Entrance Exam (Mains) 2023* among the 1,200,00 candidates.
-  - Qualified for *National Talent Search Exam* among XXXXXX candidates conducted by CBSE in 2020.
-]
+#section(title: "Scholastic Achievements", ${new Content(data.achievements)})
 
-#section(title: "Key Projects")[
-  - #project(
-      title: "Very Cool Todo App", 
-      url: "https://github.com",
-      attr: [Coding Club, IIT Kanpur],
-      from: "Jan'23", to: "Mar'23"
-    )[
-    - Designed and developed a *modern, responsive task management web app* with a focus on *performance* and *user experience*.
-    - Implemented a *dynamic state management system* enabling real-time task updates without *page reloads*.
-    - Integrated *persistent storage* using *browser APIs* to ensure data durability without a backend.
-  ]
-  
-  - #project(
-      title: "MyCompiler", 
-      attr: [Course Project | Prof. Arghya Das],
-      from: "Jan'24", to: "Mar'24"
-    )[
-    - Built a *compiler from scratch* for a custom programming language, including *lexer,* *parser* and *type checker*
-    - Implemented *recursive descent parsing* and *AST generation* for full *language grammar support*, including *control flow, expressions, and user-defined functions*.
-    - Designed and enforced a *static type system* with support for *type inference*, *scoping,* and *error reporting*.
-  ]
-
-]
+#section(title: "Key Projects", list(..${data.projects.map(
+      (proj) =>
+        new FC("project", [new Content(proj.description)], {
+          title: proj.title,
+          url: proj.url || undefined,
+          attr: proj.attr,
+          from: proj.from,
+          to: proj.to,
+        })
+    )}))
 
 
-#section(title: "Technical Skills")[
-  - *Programming Languages:* C, C++, Java, Python, JavaScript, Ruby, Rust, Go, Haskell, OCaml, LaTeX
-  - *Software and Libraries:* Git, GitHub, Docker, React, Express, Node.js, MongoDB
-]
-
+#section(title: "Technical Skills", ${new Content(data.skills)})
 
 #section(title: "Relevant Coursework")[
-  #table(columns: (1fr, 1fr, auto))[
-    Data Structure and Algorithms\\ 
-    Fundamentals of Computing \\
-    Computer Organisation
-  ][
-    Discrete Mathematics \\
-    Logic for Computer Science\\ 
-    Probability for Computer Science
-  ][
-    Linear Algebra and ODE \\
-    Real Analysis and Multivariate Calculus \\
-    Software Development 
-  ]
+  #table(
+    columns: (1fr, 1fr, 1fr), 
+    ${new Content(data.coursework[0])}, 
+    ${new Content(data.coursework[1])},
+    ${new Content(data.coursework[2])}
+  )
 ]
 
 
-#section(title: "Positions of Responsibility")[
-  - *Member, Coding Club, IIT Kanpur* #h(1fr) #emph[Jul'23 #sym.dash Present]
-    - Hosted and managed events organised by the Coding Club
-]
+#section(title: "Positions of Responsibility", ${new Content(data.por)})
 
-#section(title: "Extra Curriculars")[
-  - Participated in Inter-IIT Tech Meet 11 (Feb 2024)
-]
+#section(title: "Extra Curriculars", ${new Content(data.extracurriculars)})
   `;
+    return out;
+  }
   return ``;
 }

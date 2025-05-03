@@ -30,18 +30,6 @@ export default function OutputViewer({ artifact }: { artifact?: Uint8Array }) {
     };
   }, [renderOut, artifact]);
 
-  useEffect(() => {
-    let id: number | null = null;
-    window.addEventListener("resize", () => {
-      if (id != null) {
-        clearTimeout(id);
-      }
-      id = setTimeout(() => {
-        renderOut();
-      }, 250);
-    });
-  }, [renderOut]);
-
   return (
     <>
       <style>{s}</style>

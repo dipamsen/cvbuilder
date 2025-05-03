@@ -22,6 +22,13 @@ function App() {
         <a href="https://github.com/dipamsen" className="text-blue-400">
           dipamsen
         </a>
+        <span className="mx-1">&#183;</span>
+        <a
+          href="https://github.com/dipamsen/cvbuilder"
+          className="text-blue-400"
+        >
+          source
+        </a>
       </div>
     </div>
   );

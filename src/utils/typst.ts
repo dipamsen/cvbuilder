@@ -34,7 +34,6 @@ export async function setupCompiler() {
 }
 
 export async function setupRenderer() {
-  console.log("Creating typst renderer...");
   const renderer = createTypstRenderer();
   await renderer.init({
     beforeBuild: [],

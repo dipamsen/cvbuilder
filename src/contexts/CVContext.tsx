@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { CVData, defaultData } from "../models/template";
 import { TypstCompiler, TypstRenderer } from "@myriaddreamin/typst.ts";
 import { setupCompiler, setupRenderer } from "../utils/typst";
+import { loadSavedData, saveData } from "../utils/persist";
 
 interface CVContextType {
   state: CVData;
@@ -40,6 +41,16 @@ export function CVProvider({ children }: { children: React.ReactNode }) {
       init();
     }
   }, [renderer]);
+
+  useEffect(() => {
+    setState(loadSavedData());
+  }, []);
+
+  useEffect(() => {
+    if (state) {
+      saveData(state);
+    }
+  }, [state]);
 
   return (
     <CVContext.Provider

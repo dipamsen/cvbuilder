@@ -1,6 +1,6 @@
 import { useCVContext } from "../contexts/CVContext";
-import { CVData } from "../models/template";
-import TextInput, { Label } from "./TextInput";
+import { CVData, defaultData } from "../models/template";
+import TextInput, { Label, TextArea } from "./TextInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 
@@ -15,7 +15,7 @@ export default function EditCV() {
 
   const mutableChangeHandler =
     (mut: (prevState: CVData, val: string) => void) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = e.target.value;
       setState((prevState) => {
         const newState = structuredClone(prevState);
@@ -25,7 +25,6 @@ export default function EditCV() {
     };
 
   const downloadPdf = async () => {
-    console.log("Downloading PDF...", compiler);
     const res = await compiler?.compile({
       format: "pdf",
       mainFilePath: "/main.typ",
@@ -33,12 +32,7 @@ export default function EditCV() {
     if (res && res.result) {
       const blob = new Blob([res.result], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "cv.pdf";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      open(url, "_blank");
       URL.revokeObjectURL(url);
     }
   };
@@ -46,7 +40,7 @@ export default function EditCV() {
   const labelStyle = "block text-md font-medium text-gray-300";
 
   return (
-    <div className="edit-cv-container bg-gray-800 p-8 shadow-lg rounded-lg md:w-1/2 flex flex-col">
+    <div className="edit-cv-container bg-gray-800 p-6 shadow-lg rounded-lg md:w-1/2 flex flex-col">
       <h2 className="text-3xl font-semibold mb-6 shrink-0">Edit Your CV</h2>
       <form className="space-y-4 flex flex-col  overflow-hidden">
         <div className="overflow-y-auto h-full space-y-2 flex flex-col flex-1 px-2">
@@ -130,14 +124,14 @@ export default function EditCV() {
               onChange={changeHandler("linkedinUsername")}
             />
           </div>
-          <section>
+          <section key="education">
             <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-300">
-                Academic Qualifications
+              <h3 className="text-2xl font-semibold text-gray-300">
+                Education
               </h3>
               <button
                 type="button"
-                className="cursor-pointer hover:text-blue-500"
+                className="hover:text-blue-500"
                 onClick={() => {
                   setState((prevState) => ({
                     ...prevState,
@@ -221,18 +215,232 @@ export default function EditCV() {
               ))}
             </div>
           </section>
+          <section key="achievements">
+            <h3 className="text-2xl font-semibold text-gray-300 mb-2">
+              Achievements
+            </h3>
+            <TextArea
+              id="achievements"
+              placeholder="Achievements"
+              value={state.achievements}
+              onChange={mutableChangeHandler((prevState, val) => {
+                prevState.achievements = val;
+              })}
+              className="mb-6"
+            />
+          </section>
+          <section key="projects">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-2xl font-semibold text-gray-300">Projects</h3>
+              <div>
+                <button
+                  type="button"
+                  className="hover:text-blue-500"
+                  onClick={() => {
+                    setState((prevState) => ({
+                      ...prevState,
+                      projects: [
+                        ...prevState.projects,
+                        {
+                          title: "",
+                          url: "",
+                          attr: "",
+                          to: "",
+                          from: "",
+                          description: "",
+                        },
+                      ],
+                    }));
+                  }}
+                  title="Add Entry"
+                  aria-label="Add Entry"
+                >
+                  <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                </button>
+              </div>
+            </div>
+            {state.projects.map((proj, index) => (
+              <div key={index}>
+                <h4 className="text-md font-semibold text-gray-300 mb-2">
+                  Project {index + 1}
+                </h4>
+                <div className="flex items-center">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-2 mb-6 lg:mb-2 flex-1">
+                    <TextInput
+                      id={`name-${index}`}
+                      placeholder="Project Name"
+                      value={proj.title}
+                      onChange={mutableChangeHandler((prevState, val) => {
+                        prevState.projects[index].title = val;
+                      })}
+                    />
+                    <TextInput
+                      id={`url-${index}`}
+                      placeholder="URL"
+                      value={proj.url}
+                      onChange={mutableChangeHandler((prevState, val) => {
+                        prevState.projects[index].url = val;
+                      })}
+                    />
+                    <TextInput
+                      id={`attr-${index}`}
+                      placeholder="Attribution"
+                      value={proj.attr}
+                      onChange={mutableChangeHandler((prevState, val) => {
+                        prevState.projects[index].attr = val;
+                      })}
+                    />
+                    <div className="flex gap-2">
+                      <TextInput
+                        id={`from-${index}`}
+                        placeholder="From"
+                        value={proj.from}
+                        onChange={mutableChangeHandler((prevState, val) => {
+                          prevState.projects[index].from = val;
+                        })}
+                      />
+                      <TextInput
+                        id={`to-${index}`}
+                        placeholder="To"
+                        value={proj.to}
+                        onChange={mutableChangeHandler((prevState, val) => {
+                          prevState.projects[index].to = val;
+                        })}
+                      />
+                    </div>
+                    <TextArea
+                      id={`description-${index}`}
+                      placeholder="Description"
+                      value={proj.description}
+                      onChange={mutableChangeHandler((prevState, val) => {
+                        prevState.projects[index].description = val;
+                      })}
+                      className="col-span-4"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className=" hover:text-red-500 px-2"
+                    onClick={() => {
+                      setState((prevState) => ({
+                        ...prevState,
+                        projects: prevState.projects.filter(
+                          (_, i) => i !== index
+                        ),
+                      }));
+                    }}
+                    title="Remove Entry"
+                    aria-label="Remove Entry"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </section>
+          <section key="skills">
+            <h3 className="text-2xl font-semibold text-gray-300 mb-2">
+              Skills
+            </h3>
+            <TextArea
+              id="skills"
+              placeholder="Skills"
+              value={state.skills}
+              onChange={mutableChangeHandler((prevState, val) => {
+                prevState.skills = val;
+              })}
+              className="mb-6"
+            />
+          </section>
+          <section key="coursework">
+            <h3 className="text-2xl font-semibold text-gray-300 mb-2">
+              Coursework
+            </h3>
+
+            <div className="flex gap-2 mb-6 lg:mb-2 flex-1">
+              <TextArea
+                id="coursework-0"
+                placeholder="Coursework"
+                value={state.coursework[0]}
+                onChange={mutableChangeHandler((prevState, val) => {
+                  prevState.coursework[0] = val;
+                })}
+                className="w-full"
+              />
+              <TextArea
+                id="coursework-1"
+                placeholder="Coursework"
+                value={state.coursework[1]}
+                onChange={mutableChangeHandler((prevState, val) => {
+                  prevState.coursework[1] = val;
+                })}
+                className="w-full"
+              />
+              <TextArea
+                id="coursework-2"
+                placeholder="Coursework"
+                value={state.coursework[2]}
+                onChange={mutableChangeHandler((prevState, val) => {
+                  prevState.coursework[2] = val;
+                })}
+                className="w-full"
+              />
+            </div>
+          </section>
+          <section key="por">
+            <h3 className="text-2xl font-semibold text-gray-300 mb-2">
+              Positions of Responsibility
+            </h3>
+            <TextArea
+              id="por"
+              placeholder="Positions of Responsibility"
+              value={state.por}
+              onChange={mutableChangeHandler((prevState, val) => {
+                prevState.por = val;
+              })}
+              className="mb-6"
+            />
+          </section>
+          <section key="extracurriculars">
+            <h3 className="text-2xl font-semibold text-gray-300 mb-2">
+              Extracurricular Activities
+            </h3>
+            <TextArea
+              id="extracurricular"
+              placeholder="Extracurricular Activities"
+              value={state.extracurriculars}
+              onChange={mutableChangeHandler((prevState, val) => {
+                prevState.extracurriculars = val;
+              })}
+              className="mb-6"
+            />
+          </section>
         </div>
         {/* end: scroll */}
-        <button
-          type="submit"
-          onClick={(e) => {
-            e.preventDefault();
-            downloadPdf();
-          }}
-          className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700"
-        >
-          Download PDF
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              const cnf = confirm(
+                "Are you sure you want to reset the CV to placeholder data? This will remove all your data."
+              );
+              if (cnf) setState(defaultData);
+            }}
+            className="w-full bg-amber-700  hover:bg-amber-800 text-white py-2 px-4 rounded-md"
+          >
+            Reset
+          </button>
+          <button
+            type="submit"
+            onClick={(e) => {
+              e.preventDefault();
+              downloadPdf();
+            }}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md"
+          >
+            Download PDF
+          </button>
+        </div>
       </form>
     </div>
   );
