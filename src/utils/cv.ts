@@ -1,12 +1,44 @@
 import { CVData } from "../models/template";
 
 export function typstSanitize(input: string): string {
-  return `\`${input}\`.text`;
+  return `\`${input.replace(/-/g, "–")}\`.text`;
+}
+
+/** returns value in code mode */
+export function typify(input: unknown): string {
+  if (typeof input === "string") {
+    return typstSanitize(input);
+  } else if (typeof input === "number") {
+    return `${input}`;
+  } else if (Array.isArray(input)) {
+    // returns array
+    return `(${input.map(typify).join(", ")})`;
+  } else if (typeof input === "object" && input !== null) {
+    // returns dict
+    return `(${Object.entries(input)
+      .map(([key, value]) => `${key}: ${typify(value)}`)
+      .join(", ")})`;
+  }
+  return `none`;
+}
+
+/**
+ * Template literal tag function for Typst.
+ */
+export function typ(
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+): string {
+  let result = strings[0];
+  for (let i = 0; i < values.length; i++) {
+    result += typify(values[i]) + strings[i + 1];
+  }
+  return result;
 }
 
 export function generateTypstCV(data: CVData, template: string): string {
   if (template === "iitk")
-    return `
+    return typ`
 #import "@preview/fontawesome:0.5.0": fa-icon
 
 
@@ -99,19 +131,27 @@ export function generateTypstCV(data: CVData, template: string): string {
 
 
 #show: resume.with(
-  name: ${typstSanitize(data.name)},
-  tagline: [#${typstSanitize(data.tagline)}],
-  dept: [#${typstSanitize(data.department)}],
-  email: ${typstSanitize(data.email)},
-  phone: ${typstSanitize(data.phone)},
-  github: (
-    username: ${typstSanitize(data.githubUsername)},
-    url: ${typstSanitize(data.githubUrl)},
-  ),
-  linkedin: (
-    username: ${typstSanitize(data.linkedinUsername)},
-    url: ${typstSanitize(data.linkedinUrl)},
-  )
+  ..${{
+    name: data.name,
+    tagline: data.tagline,
+    dept: data.department,
+    email: data.email || undefined,
+    phone: data.phone || undefined,
+    github:
+      data.githubUrl || data.githubUsername
+        ? {
+            username: data.githubUsername,
+            url: data.githubUrl,
+          }
+        : undefined,
+    linkedin:
+      data.linkedinUrl || data.linkedinUsername
+        ? {
+            username: data.linkedinUsername,
+            url: data.linkedinUrl,
+          }
+        : undefined,
+  }}
 )
 
 #section(title: "Academic Qualifications")[
@@ -122,9 +162,9 @@ export function generateTypstCV(data: CVData, template: string): string {
     table.header(
       [Year], [Degree/Certificate], [Institute/School], [CPI/\\%]
     ),
-    [2023 #sym.dash Present], [B.Tech], [Indian Institute of Technology, Kanpur], [9.8/10],
-    [2022], [CBSE (XII)], [Khalsa College Public School, Amritsar], [92.8\\%],
-    [2020], [ICSE (X)], [Sacred Heart Public School, Punga], [94%]
+    ..${data.education
+      .map((edu) => [edu.year, edu.degree, edu.institute, edu.cgpa])
+      .flat()}
   )
 ]
 

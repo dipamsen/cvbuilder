@@ -16,6 +16,9 @@ function PreviewCV({ typstCode }: { typstCode: string }) {
         mainFilePath: "/main.typ",
       });
       setResult(result);
+      if (result?.diagnostics) {
+        console.log("Diagnostics:", result.diagnostics);
+      }
     },
     [compiler, typstCode]
   );
