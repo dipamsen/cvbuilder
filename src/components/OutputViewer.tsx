@@ -1,30 +1,16 @@
-import { TypstRenderer } from "@myriaddreamin/typst.ts";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { setupRenderer } from "../utils/typst";
-import useDebounced from "../utils/useDebounced";
+import { useCallback, useEffect, useRef } from "react";
+import { useCVContext } from "../contexts/CVContext";
 
 export default function OutputViewer({ artifact }: { artifact?: Uint8Array }) {
-  const [renderer, setRenderer] = useState<TypstRenderer | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const { renderer } = useCVContext();
   const divRef = useRef<HTMLDivElement>(null);
 
   const loadingEl = (
-    <div className="flex items-center justify-center h-full text-gray-500">
+    <div className="flex items-center justify-center h-full w-full text-gray-500 absolute">
       <span className="loader"></span>
       Loading...
     </div>
   );
-
-  useEffect(() => {
-    async function init() {
-      const r = await setupRenderer();
-      setRenderer(r);
-    }
-
-    if (!renderer) {
-      init();
-    }
-  }, [renderer]);
 
   const renderOut = useCallback(async () => {
     if (renderer && divRef.current && artifact) {
@@ -34,17 +20,15 @@ export default function OutputViewer({ artifact }: { artifact?: Uint8Array }) {
         format: "vector",
         pixelPerPt: 3,
       });
-      setLoaded(true);
     }
   }, [artifact, renderer]);
 
-  useDebounced(
-    () => {
-      renderOut();
-    },
-    500,
-    []
-  );
+  useEffect(() => {
+    const id = setTimeout(renderOut, 300);
+    return () => {
+      clearTimeout(id);
+    };
+  }, [renderOut, artifact]);
 
   useEffect(() => {
     let id: number | null = null;
@@ -54,22 +38,14 @@ export default function OutputViewer({ artifact }: { artifact?: Uint8Array }) {
       }
       id = setTimeout(() => {
         renderOut();
-      }, 100);
+      }, 250);
     });
   }, [renderOut]);
-
-  if (!artifact) return loadingEl;
 
   return (
     <>
       <style>{s}</style>
-      <div
-        ref={divRef}
-        style={{
-          display: loaded ? "block" : "none",
-        }}
-      ></div>
-      {!loaded && loadingEl}
+      <div ref={divRef}>{loadingEl}</div>
     </>
   );
 }

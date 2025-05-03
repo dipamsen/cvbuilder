@@ -1,31 +1,43 @@
-import { CVData } from "../models/template";
+import { useCVContext } from "../contexts/CVContext";
 
-export default function EditCV({
-  template,
-  setTemplate,
-  state,
-  setState,
-}: {
-  template: string;
-  setTemplate: (template: string) => void;
-  state: CVData;
-  setState: React.Dispatch<React.SetStateAction<CVData>>;
-}) {
+export default function EditCV() {
+  const { state, setState, template, setTemplate, compiler } = useCVContext();
+
   const changeHandler =
     (name: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setState((prevState) => ({ ...prevState, [name]: value }));
     };
 
+  const downloadPdf = async () => {
+    console.log("Downloading PDF...", compiler);
+    const res = await compiler?.compile({
+      format: "pdf",
+      mainFilePath: "/main.typ",
+    });
+    if (res && res.result) {
+      const blob = new Blob([res.result], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "cv.pdf";
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
   const inputStyle =
-    "mt-2 block w-full border border-gray-700 bg-gray-800 text-gray-200 rounded-lg shadow-md sm:text-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500";
+    "mt-2 block w-full border border-gray-700 bg-gray-800 text-gray-200 rounded-md shadow-md sm:text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500";
   const labelStyle = "block text-md font-medium text-gray-300";
 
   return (
     <div className="edit-cv-container bg-gray-800 p-8 shadow-lg rounded-lg md:w-1/2 flex flex-col">
       <h2 className="text-3xl font-semibold mb-6 shrink-0">Edit Your CV</h2>
-      <form className="space-y-6 flex flex-col  overflow-hidden">
-        <div className="overflow-y-auto h-full space-y-4 px-0.5 flex flex-col flex-1">
+      <form className="space-y-4 flex flex-col  overflow-hidden">
+        <div className="overflow-y-auto h-full space-y-2 px-0.5 flex flex-col flex-1">
           <div>
             <label htmlFor="template" className={labelStyle}>
               Choose Template
@@ -175,14 +187,16 @@ export default function EditCV({
             </div>
           </div>
         </div>
+
         <button
           type="submit"
           onClick={(e) => {
             e.preventDefault();
+            downloadPdf();
           }}
-          className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700"
         >
-          Save
+          Download PDF
         </button>
       </form>
     </div>

@@ -1,12 +1,10 @@
-import { useState } from "react";
 import EditCV from "./components/EditCV";
 import PreviewCV from "./components/PreviewCV";
-import { CVData, defaultData } from "./models/template";
 import { generateTypstCV } from "./utils/cv";
+import { useCVContext } from "./contexts/CVContext";
 
 function App() {
-  const [template, setTemplate] = useState("iitk");
-  const [state, setState] = useState<CVData>(defaultData);
+  const { state, template } = useCVContext();
 
   return (
     <div className="bg-gray-900 md:h-screen text-white flex flex-col">
@@ -15,12 +13,7 @@ function App() {
       </div>
 
       <main className="p-4 flex gap-4 text-gray-200 flex-1 md:overflow-hidden flex-col md:flex-row">
-        <EditCV
-          template={template}
-          setTemplate={setTemplate}
-          state={state}
-          setState={setState}
-        />
+        <EditCV />
         <PreviewCV typstCode={generateTypstCV(state, template)} />
       </main>
 
