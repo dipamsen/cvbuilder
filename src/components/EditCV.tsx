@@ -52,12 +52,25 @@ export default function EditCV() {
               type="radio"
               name="template"
               value="iitk"
+              id="iitk"
               checked={template === "iitk"}
               onChange={(e) => setTemplate(e.target.value)}
               className="mr-2"
             />
             <label htmlFor="iitk" className="mr-4">
               IITK
+            </label>
+            <input
+              type="radio"
+              name="template"
+              value="iitkgp"
+              id="iitkgp"
+              checked={template === "iitkgp"}
+              onChange={(e) => setTemplate(e.target.value)}
+              className="mr-2"
+            />
+            <label htmlFor="iitkgp" className="mr-4">
+              IITKGP
             </label>
           </div>
           <TextInput

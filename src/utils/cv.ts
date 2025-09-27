@@ -78,8 +78,9 @@ export class Content extends TypstElt {
 }
 
 export function generateTypstCV(data: CVData, template: string): string {
+  let out;
   if (template === "iitk") {
-    const out = typ`
+    out = typ`
 #import "@preview/fontawesome:0.5.0": fa-icon
 
 
@@ -169,7 +170,108 @@ export function generateTypstCV(data: CVData, template: string): string {
   
   body
 } 
+`
+  } else if (template === "iitkgp") {
+    out = typ`
+  #import "@preview/fontawesome:0.5.0": fa-icon
 
+
+#let section(title: "", body) = {
+  heading(title, level: 2)
+  body
+}
+
+#let project(body, ..args) = {
+  let title = args.at("title")
+  let url = args.at("url", default: none)
+  let attr = args.at("attr", default: none)
+  let dur = args.at("dur", default: none)
+  let from = args.at("from", default: none)
+  let to = args.at("to", default: none)
+  if url == none {
+    strong(title)
+  } else {
+    show: link.with(url)
+    strong(title)
+    [ ]
+    box(fa-icon("github"))
+  }
+  if attr != none {
+    [ | ]
+    attr
+  }
+  if dur != none {
+    h(1fr)
+    emph(dur)
+  } else if from != none and to != none {
+    h(1fr)
+    emph[#from #sym.dash.en #to]
+  }
+  body
+}
+
+#let resume(body, ..args) = {
+  set text(font: "PT Sans", 11pt)
+  
+  set page(margin: 0.7cm)
+
+  let name = args.at("name")
+  let roll = args.at("roll", default: none)
+  let tagline = args.at("tagline")
+  let dept = args.at("dept")
+  let email = args.at("email", default: none)
+  let phone = args.at("phone", default: none)
+  let github = args.at("github", default: none)
+  let linkedin = args.at("linkedin", default: none)
+
+  set table(inset: 0.4em, stroke: 0.5pt)
+
+  show heading.where(level: 2): it => {
+    set block(above: 0.5em, below: 0.5em)
+    set align(center)
+    block(upper(it.body), fill: rgb("#e1e9f0"), width: 100%, inset: (x: 0.3em, y: 0.4em), stroke: (y: gray))
+  }
+
+  set list(marker: ([\u{25cf}], [\u{26AC}]))
+
+  let name-el = {
+    set block(spacing: 0.2em)
+    set text(1.4em, weight: "bold", bottom-edge: "descender")
+    block(
+      (upper(name), roll).filter(x => x != none).join([#h(0.7em)|#h(0.7em)])
+    )
+  }
+  let email-el = if email != none {link("mailto:" + email)[#fa-icon("envelope", solid: true) #email]}
+  let phone-el = if phone != none [#fa-icon("phone", solid: true) #phone]
+  let github-el = if github != none { link(github.at("url"))[#fa-icon("github") #github.at("username")] }
+  let linkedin-el = if linkedin != none {link(linkedin.at("url"))[#fa-icon("linkedin") #linkedin.at("username")]}
+
+  let contacts = (email-el, phone-el, github-el, linkedin-el).filter(i => i != none).join([ | ])
+  
+  grid(
+    columns: (50pt, 1fr, 50pt), 
+    row-gutter: 0.65em, 
+    align: (left, center + horizon, right),
+    // image("../images/iitkgp.svg", width: 100%),
+    block(height: 60pt)[],
+    [
+      #set par(spacing: 0.65em)
+      #name-el
+      #dept
+      
+      #contacts
+    ]
+  )
+  
+  
+  
+  body
+} 
+`
+  } else {
+    return "";
+  }
+  out += typ`
 
 #show: resume.with(
   ..${{
@@ -240,6 +342,4 @@ export function generateTypstCV(data: CVData, template: string): string {
 #section(title: "Extra Curriculars", ${new Content(data.extracurriculars)})
   `;
     return out;
-  }
-  return ``;
 }

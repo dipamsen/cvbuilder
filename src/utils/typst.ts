@@ -16,6 +16,10 @@ const fontFiles = [
   "fonts/Font%20Awesome%206%20Brands-Regular-400.otf",
   "fonts/Font%20Awesome%206%20Free-Solid-900.otf",
   "fonts/Font%20Awesome%206%20Free-Regular-400.otf",
+  "fonts/PTSans-Bold.ttf",
+  "fonts/PTSans-Italic.ttf",
+  "fonts/PTSans-Regular.ttf",
+  "fonts/PTSans-BoldItalic.ttf",
 ];
 
 export async function setupCompiler() {
