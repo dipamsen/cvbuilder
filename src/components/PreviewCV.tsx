@@ -2,11 +2,14 @@ import { TypstCompiler } from "@myriaddreamin/typst.ts";
 import { useCallback, useEffect, useState } from "react";
 import OutputViewer from "./OutputViewer";
 import { useCVContext } from "../contexts/CVContext";
+import { DiagnosticsData } from "@myriaddreamin/typst.ts/compiler";
 
 function PreviewCV({ typstCode }: { typstCode: string }) {
   const { compiler } = useCVContext();
   const [result, setResult] =
     useState<Awaited<ReturnType<TypstCompiler["compile"]>>>();
+
+  const [error, setError] = useState<string>();
 
   const compile = useCallback(
     async (c = compiler) => {
@@ -16,8 +19,12 @@ function PreviewCV({ typstCode }: { typstCode: string }) {
         mainFilePath: "/main.typ",
       });
       setResult(result);
-      if (result?.diagnostics) {
+      const err = result.diagnostics?.find(d => typeof d != "string" && d.severity === "error") as DiagnosticsData["full"];
+      if (err) {
         console.log("Diagnostics:", result.diagnostics);
+        setError(err.message);
+      } else {
+        setError(undefined);
       }
     },
     [compiler, typstCode]
@@ -30,10 +37,11 @@ function PreviewCV({ typstCode }: { typstCode: string }) {
   }, [compile, typstCode]);
 
   return (
-    <div className="section md:h-full preview p-4 bg-gray-800 shadow-md rounded-md md:w-1/2 text-gray-200">
+    <div className="section md:h-full preview p-4 bg-gray-800 shadow-md rounded-md md:w-1/2 text-gray-200 relative">
       <div className="overflow-y-auto bg-white overflow-x-visible h-120 md:h-full space-y-6 px-0.5 [scrollbar-gutter:stable] relative">
         <OutputViewer artifact={result?.result} />
       </div>
+      {error && <div className="absolute bottom-4 bg-red-500 text-white px-2 py-1 rounded-md right-4 left-4">Error: {error}</div>}
     </div>
   );
 }

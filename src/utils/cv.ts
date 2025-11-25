@@ -1,7 +1,7 @@
 import { CVData } from "../models/template";
 
 export function typstSanitize(input: string): string {
-  return `\`${input.replace(/-/g, "–")}\`.text`;
+  return `\`${input}\`.text`;
 }
 
 /** returns value in code mode */
@@ -73,20 +73,21 @@ export class Content extends TypstElt {
     super();
   }
   toCode() {
-    return `[${this.str}]`;
+    return `[\n${this.str}\n]`;
   }
 }
 
-export function generateTypstCV(data: CVData, template: string): string {
-  let out;
-  if (template === "iitk") {
-    out = typ`
-#import "@preview/fontawesome:0.5.0": fa-icon
 
+const common = `
+#import "@preview/fontawesome:0.5.0": fa-icon
 
 #let section(title: "", body) = {
   heading(title, level: 2)
   body
+}
+
+#let entry(title: "", from: "", to: "", duration: "") = {
+  [#strong(title) #h(1fr) #emph[#from #sym.dash.en #to]]
 }
 
 #let project(body, ..args) = {
@@ -117,6 +118,13 @@ export function generateTypstCV(data: CVData, template: string): string {
   }
   body
 }
+`
+
+
+export function generateTypstCV(data: CVData, template: string): string {
+  let out;
+  if (template === "iitk") {
+    out = common + typ`
 
 #let resume(body, ..args) = {
   set text(font: "New Computer Modern", 11pt)
@@ -172,44 +180,8 @@ export function generateTypstCV(data: CVData, template: string): string {
 } 
 `
   } else if (template === "iitkgp") {
-    out = typ`
-  #import "@preview/fontawesome:0.5.0": fa-icon
-
-
-#let section(title: "", body) = {
-  heading(title, level: 2)
-  body
-}
-
-#let project(body, ..args) = {
-  let title = args.at("title")
-  let url = args.at("url", default: none)
-  let attr = args.at("attr", default: none)
-  let dur = args.at("dur", default: none)
-  let from = args.at("from", default: none)
-  let to = args.at("to", default: none)
-  if url == none {
-    strong(title)
-  } else {
-    show: link.with(url)
-    strong(title)
-    [ ]
-    box(fa-icon("github"))
-  }
-  if attr != none {
-    [ | ]
-    attr
-  }
-  if dur != none {
-    h(1fr)
-    emph(dur)
-  } else if from != none and to != none {
-    h(1fr)
-    emph[#from #sym.dash.en #to]
-  }
-  body
-}
-
+    out = common + typ`
+    
 #let resume(body, ..args) = {
   set text(font: "PT Sans", 11pt)
   
