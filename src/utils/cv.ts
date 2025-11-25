@@ -1,4 +1,4 @@
-import { CVData } from "../models/template";
+import { CVData, CVSettings } from "../models/template";
 
 export function typstSanitize(input: string): string {
   return `\`${input}\`.text`;
@@ -121,13 +121,13 @@ const common = `
 `
 
 
-export function generateTypstCV(data: CVData, template: string): string {
+export function generateTypstCV(data: CVData, settings: CVSettings, template: string): string {
   let out;
   if (template === "iitk") {
     out = common + typ`
 
 #let resume(body, ..args) = {
-  set text(font: "New Computer Modern", 11pt)
+  set text(font: "New Computer Modern", ${settings.fontSize}pt)
   
   set page(margin: 0.7cm)
 
@@ -183,7 +183,7 @@ export function generateTypstCV(data: CVData, template: string): string {
     out = common + typ`
     
 #let resume(body, ..args) = {
-  set text(font: "PT Sans", 11pt)
+  set text(font: "PT Sans", ${settings.fontSize}pt)
   
   set page(margin: 0.7cm)
 
@@ -204,7 +204,7 @@ export function generateTypstCV(data: CVData, template: string): string {
     block(upper(it.body), fill: rgb("#e1e9f0"), width: 100%, inset: (x: 0.3em, y: 0.4em), stroke: (y: gray))
   }
 
-  set list(marker: ([\u{25cf}], [\u{26AC}]))
+  set list(marker: ([\\u{25cf}], [\\u{26AC}]))
 
   let name-el = {
     set block(spacing: 0.2em)
@@ -290,7 +290,7 @@ export function generateTypstCV(data: CVData, template: string): string {
         new FC("project", [new Content(proj.description)], {
           title: proj.title,
           url: proj.url || undefined,
-          attr: proj.attr,
+          attr: proj.attr || undefined,
           from: proj.from,
           to: proj.to,
         })

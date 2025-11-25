@@ -38,6 +38,10 @@ interface Project {
   to: string;
 }
 
+export interface CVSettings {
+  fontSize: number;
+}
+
 export const defaultData: CVData = {
   name: "John Doe",
   tagline: "Third Year Undergraduate, IIT Kanpur",
@@ -111,4 +115,8 @@ Software Development`,
   por: `- #entry(title: "Member, Coding Club, IIT Kanpur", from: "Jul'23", to: "Present")
   - Hosted and managed events organised by the Coding Club`,
   extracurriculars: `- Participated in *Inter-IIT Tech Meet 11* (Feb 2024)\n`,
+};
+
+export const defaultSettings: CVSettings = {
+  fontSize: 11,
 };

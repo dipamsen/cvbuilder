@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { CVData, defaultData } from "../models/template";
+import { CVData, CVSettings, defaultData } from "../models/template";
 import { TypstCompiler, TypstRenderer } from "@myriaddreamin/typst.ts";
 import { setupCompiler, setupRenderer } from "../utils/typst";
 import { loadSavedData, saveData } from "../utils/persist";
@@ -9,6 +9,8 @@ interface CVContextType {
   setState: React.Dispatch<React.SetStateAction<CVData>>;
   template: string;
   setTemplate: React.Dispatch<React.SetStateAction<string>>;
+  settings: CVSettings;
+  setSettings: React.Dispatch<React.SetStateAction<CVSettings>>;
   compiler?: TypstCompiler;
   renderer?: TypstRenderer;
 }
@@ -20,6 +22,9 @@ export function CVProvider({ children }: { children: React.ReactNode }) {
   const [template, setTemplate] = useState("iitk");
   const [compiler, setCompiler] = useState<TypstCompiler>();
   const [renderer, setRenderer] = useState<TypstRenderer>();
+  const [settings, setSettings] = useState<CVSettings>({
+    fontSize: 11,
+  });
 
   useEffect(() => {
     if (compiler) return;
@@ -43,7 +48,8 @@ export function CVProvider({ children }: { children: React.ReactNode }) {
   }, [renderer]);
 
   useEffect(() => {
-    setState(loadSavedData());
+    setState(loadSavedData("cv-data"));
+    setSettings(loadSavedData("cv-settings"));
   }, []);
 
   useEffect(() => {
@@ -54,7 +60,7 @@ export function CVProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <CVContext.Provider
-      value={{ state, setState, template, setTemplate, compiler, renderer }}
+      value={{ state, setState, template, setTemplate, compiler, renderer, settings, setSettings }}
     >
       {children}
     </CVContext.Provider>
