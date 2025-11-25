@@ -30,9 +30,14 @@ export default function EditCV() {
       mainFilePath: "/main.typ",
     });
     if (res && res.result) {
-      const blob = new Blob([res.result], { type: "application/pdf" });
+      const uint8 = new Uint8Array(res.result);
+      const blob = new Blob([uint8.buffer.slice(0)], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
-      open(url, "_blank");
+      const a = document.createElement("a");
+      a.href = url;
+      const id = new Date().toISOString().replace(/[^a-zA-Z0-9]/g, "_");
+      a.download = `resume_${id}.pdf`;
+      a.click();
       URL.revokeObjectURL(url);
     }
   };
