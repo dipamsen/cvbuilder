@@ -1,6 +1,6 @@
 # CV Builder
 
-Web based CV editor to create and download CVs in PDF format. Powered by Typst. Uses predefined CV templates from [dipamsen/cv-templates](https://github.com/dipamsen/cv-templates).
+Web based CV editor to create and download CVs in PDF format. Powered by Typst.
 
 ![screenshot of home page](./docs/screenshot-ff.png)
 
