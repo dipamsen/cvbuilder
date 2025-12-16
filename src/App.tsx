@@ -6,6 +6,8 @@ import { useCVContext } from "./contexts/CVContext";
 function App() {
   const { state, template, settings } = useCVContext();
 
+  const typstCode = generateTypstCV(state, settings, template);
+
   return (
     <div className="bg-gray-900 md:h-screen text-white flex flex-col">
       <div className="bg-gray-800 text-white text-2xl font-bold text-center py-4 shadow-md shrink-0">
@@ -13,8 +15,8 @@ function App() {
       </div>
 
       <main className="p-4 flex gap-4 text-gray-200 flex-1 md:overflow-hidden flex-col md:flex-row">
-        <EditCV />
-        <PreviewCV typstCode={generateTypstCV(state, settings, template)} />
+        <EditCV typstCode={typstCode} />
+        <PreviewCV typstCode={typstCode} />
       </main>
 
       <div className="bg-gray-800 text-white text-sm text-center py-2 shrink-0">

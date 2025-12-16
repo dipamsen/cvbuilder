@@ -20,6 +20,7 @@
     "@myriaddreamin/typst.react": "^0.6.0-rc1",
     "@myriaddreamin/typst.ts": "^0.6.0-rc1",
     "@tailwindcss/vite": "^4.1.4",
+    "jszip": "^3.10.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.1.4"

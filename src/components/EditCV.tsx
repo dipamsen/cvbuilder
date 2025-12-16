@@ -5,8 +5,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGear, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Modal from "./Modal";
 import { useState } from "react";
+import JSZip from "jszip";
+import { fontFiles } from "../utils/typst";
 
-export default function EditCV() {
+export default function EditCV({ typstCode }: { typstCode: string }) {
   const { state, setState, template, setTemplate, compiler } = useCVContext();
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
@@ -45,6 +47,23 @@ export default function EditCV() {
       a.click();
       URL.revokeObjectURL(url);
     }
+  };
+
+  const downloadZip = async () => {
+    const zip = new JSZip();
+    zip.file("main.typ", typstCode);
+    for (const file of fontFiles) {
+      zip.file(file, await fetch(file).then((r) => r.blob()));
+    }
+
+    const blob = await zip.generateAsync({ type: "blob" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const id = new Date().toISOString().replace(/[^a-zA-Z0-9]/g, "_");
+    a.download = `cv_${id}.zip`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const labelStyle = "block text-md font-medium text-gray-300";
@@ -487,7 +506,17 @@ export default function EditCV() {
               }}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md"
             >
-              Download PDF
+              Export PDF
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                downloadZip();
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md"
+            >
+              Download Typst Project (ZIP)
             </button>
           </div>
         </form>
@@ -503,20 +532,30 @@ export default function EditCV() {
 
 function SettingsModal({
   open,
-  onClose}: {
+  onClose,
+}: {
   open: boolean;
   onClose: () => void;
 }) {
-  const {  settings, setSettings } = useCVContext();
-  
-    return (
+  const { settings, setSettings } = useCVContext();
+
+  return (
     <Modal open={open} onClose={onClose}>
       <div className="flex flex-col gap-4">
         <h2 className="text-xl font-semibold">Preferences</h2>
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-semibold">Font Size</h3>
           <div className="flex gap-2">
-            <select className="w-full" value={settings.fontSize} onChange={(e) => setSettings(s => ({...s, fontSize: parseInt(e.target.value)}))}>
+            <select
+              className="w-full"
+              value={settings.fontSize}
+              onChange={(e) =>
+                setSettings((s) => ({
+                  ...s,
+                  fontSize: parseInt(e.target.value),
+                }))
+              }
+            >
               <option value={9}>9pt</option>
               <option value={10}>10pt</option>
               <option value={11}>11pt</option>
