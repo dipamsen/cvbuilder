@@ -55,6 +55,25 @@ export default function EditCV({ typstCode }: { typstCode: string }) {
     for (const file of fontFiles) {
       zip.file(file, await fetch(file).then((r) => r.blob()));
     }
+    zip.file("README.md", `
+Hello there, this is a [Typst](https://typst.app/) project. You can see the code in the \`main.typ\` file. (Open it in a text editor.)
+
+Everything before the \`#show resume.with()\` defines the [template](https://typst.app/docs/tutorial/making-a-template/). Everything after that defines the actual content of the CV.
+
+To run the code yourself:
+1. [Install Typst](https://github.com/typst/typst#installation)
+2. Compile the code:
+\`\`\`
+typst compile --font-path=fonts main.typ
+\`\`\`
+Or, incrementally recompile as you edit the code:
+\`\`\`
+typst watch --font-path=fonts main.typ
+\`\`\`
+A PDF file will be generated, called \`main.pdf\`.
+
+Happy Typsting!
+`.trim());
 
     const blob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(blob);
